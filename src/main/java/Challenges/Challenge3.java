@@ -9,11 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 public class Challenge3 {
     public String getGreeting() {
@@ -66,32 +65,29 @@ public class Challenge3 {
     }
 
     static class Result {
-        public static List<Integer> kthPerson(int busCapacity, List<Integer> p, List<Integer> q) {
-            AtomicInteger countPassengerPerTurn = new AtomicInteger();
-            AtomicInteger countPassengerTotal = new AtomicInteger();
-            List<Integer> result = new ArrayList<>();
+        public static List<Integer> kthPerson(int k, List<Integer> p, List<Integer> q) {
             List<Integer> pList = new LinkedList<>(p);
-            List<Integer> qList = new LinkedList<>(q);
-            qList.stream().forEach(busArrivalTime -> {
-                //pList.stream().forEach(limitPatient -> {});
-                for (int j = 0; j < pList.size(); j++) {
-                    if (j < pList.size()) {
-                        if (pList.get(j) < busArrivalTime) pList.remove(pList.get(j));
-                    }
-                }
-                IntStream.iterate(0, i -> i + 1).limit(busCapacity).forEach(passengerPosition -> {
-                    if (!pList.isEmpty()) {
-                        pList.remove(pList.get(passengerPosition));
-                        countPassengerPerTurn.set(countPassengerPerTurn.get() + 1);
-                    } else {
-                        countPassengerPerTurn.set(0);
+            List<Integer> result = new ArrayList<>();
+            AtomicReference<Integer> totalPersonLeft = new AtomicReference<>(0);
+            q.stream().forEach(busArrivalTime -> {
+                List<Integer> personsOnBus = new ArrayList<>();
+                List<Integer> personsLeft = new ArrayList<>();
+                p.stream().forEach(person -> {
+                    if (person < busArrivalTime) {
+                        personsLeft.add(person);
                     }
                 });
-                if (countPassengerPerTurn.get() != 0) {
-                    countPassengerTotal.set(countPassengerTotal.get() + countPassengerPerTurn.get());
-                    result.add(countPassengerTotal.get());
-                } else {
+                personsLeft.stream().forEach(personLeft -> pList.remove(personLeft));
+                IntStream.range(0, k).forEach(passengerIndex -> {
+                    if (pList.size() > passengerIndex) {
+                        personsOnBus.add(pList.get(passengerIndex));
+                        totalPersonLeft.set(totalPersonLeft.get() + 1);
+                    }
+                });
+                if (personsOnBus.size() < k) {
                     result.add(0);
+                } else {
+                    result.add(totalPersonLeft.get());
                 }
             });
             return result;
