@@ -48,6 +48,7 @@ public class Challenge2 {
         List<Integer> arrival = Arrays.asList(1, 1, 2);
         List<Integer> departure = Arrays.asList(1, 2, 2);
         int result = Result.countMeetings(arrival, departure);
+        System.out.println(result);
 /*
         bufferedWriter.write(String.valueOf(result));
         bufferedWriter.newLine();

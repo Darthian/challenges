@@ -4,6 +4,7 @@
 package Challenges;
 
 import java.io.*;
+
 import java.math.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,6 +21,7 @@ import java.util.stream.*;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+
 
 public class Challenge1 {
     public String getGreeting() {
@@ -64,7 +66,7 @@ public class Challenge1 {
          */
 
         public static int getExpenditure(int userId, int locationId, int netStart, int netEnd) throws IOException, InterruptedException {
-            HttpClient client = HttpClient.newHttpClient();
+           /* HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://jsonmock.hackerrank.com/api/transactions/search?userId="+userId))
                     .build();
@@ -72,7 +74,7 @@ public class Challenge1 {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            System.out.println(response.body());
+            System.out.println(response.body());*/
             return 0;
         }
 

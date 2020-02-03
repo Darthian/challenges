@@ -3,66 +3,98 @@
  */
 package Challenges;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static java.util.Map.Entry.comparingByValue;
+import static java.util.stream.Collectors.toMap;
 
 public class Challenge4 {
-    public String getGreeting() {
-        return "Hello world.";
-    }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        /*
+    public static void main(String[] args) {
+/*
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getenv("OUTPUT_PATH")));
 
-        int userId = Integer.parseInt(bufferedReader.readLine().trim());
-        int locationId = Integer.parseInt(bufferedReader.readLine().trim());
-        int netStart = Integer.parseInt(bufferedReader.readLine().trim());
-        int netEnd = Integer.parseInt(bufferedReader.readLine().trim());
-        */
+        int stockDataCount = Integer.parseInt(bufferedReader.readLine().trim());
 
-        int result = Result.getExpenditure(2, 8, 5, 50);
-/*
-        bufferedWriter.write(String.valueOf(result));
+        List<Integer> stockData = new ArrayList<>();
+
+        for (int i = 0; i < stockDataCount; i++) {
+            int stockDataItem = Integer.parseInt(bufferedReader.readLine().trim());
+            stockData.add(stockDataItem);
+        }
+
+        int queriesCount = Integer.parseInt(bufferedReader.readLine().trim());
+
+        List<Integer> queries = new ArrayList<>();
+
+        for (int i = 0; i < queriesCount; i++) {
+            int queriesItem = Integer.parseInt(bufferedReader.readLine().trim());
+            queries.add(queriesItem);
+        }
+*/
+
+        List<Integer> result = Result.predictAnswer(Arrays.asList(5, 6, 8, 4, 9, 10, 8, 3, 6, 4), Arrays.asList(3, 1, 8));
+        result.stream().forEach(System.out::println);
+
+        /*for (int i = 0; i < result.size(); i++) {
+            bufferedWriter.write(String.valueOf(result.get(i)));
+
+            if (i != result.size() - 1) {
+                bufferedWriter.write("\n");
+            }
+        }
+
         bufferedWriter.newLine();
 
         bufferedReader.close();
         bufferedWriter.close();
-        */
-
+*/
     }
 
     static class Result {
-
         /*
-         * Complete the 'getExpenditure' function below.
+         * Complete the 'predictAnswer' function below.
          *
-         * The function is expected to return an INTEGER.
+         * The function is expected to return an INTEGER_ARRAY.
          * The function accepts following parameters:
-         *  1. INTEGER userId
-         *  2. INTEGER locationId
-         *  3. INTEGER netStart
-         *  4. INTEGER netEnd
-         *
-         *  https://jsonmock.hackerrank.com/api/transactions/search?userId=
+         *  1. INTEGER_ARRAY stockData
+         *  2. INTEGER_ARRAY queries
          */
+        public static List<Integer> predictAnswer(List<Integer> stockData, List<Integer> queries) {
+            List<Integer> result = new ArrayList<>();
+            List<Integer> stockDataList = new LinkedList<>(stockData);
+            List<Integer> queriesList = new LinkedList<>(queries);
 
-        public static int getExpenditure(int userId, int locationId, int netStart, int netEnd) throws IOException, InterruptedException {
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://jsonmock.hackerrank.com/api/transactions/search?userId="+userId))
-                    .build();
-
-            HttpResponse<String> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
-
-            System.out.println(response.body());
-            return 0;
+            queriesList.stream().forEach(x -> {
+                Map<Integer, Integer> daysFound = new HashMap<>();
+                int queryDayValue = stockDataList.get(x.intValue() - 1);
+                for (int index = x.intValue() - 1; index > 0; index--) {
+                    if (stockDataList.get(index) < queryDayValue) {
+                        if (daysFound.size() < 2) daysFound.put(stockDataList.get(index),index + 1);
+                    }
+                }
+                IntStream.range(x.intValue() - 1, stockDataList.size())
+                        .forEach(index -> {
+                            if (stockDataList.get(index) < queryDayValue) {
+                                if (daysFound.size() < 2) daysFound.put(stockDataList.get(index), index + 1);
+                            }
+                        });
+                if (!daysFound.isEmpty()) {
+                    Map<Integer, Integer> sortedDaysFound = daysFound
+                            .entrySet()
+                            .stream()
+                            .sorted(comparingByValue())
+                            .collect(
+                                    toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2,
+                                            LinkedHashMap::new));
+                    result.add(sortedDaysFound.entrySet().iterator().next().getValue());
+                } else {
+                    result.add(-1);
+                }
+            });
+            return result;
         }
-
     }
 }
