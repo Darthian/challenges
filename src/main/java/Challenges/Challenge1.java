@@ -3,30 +3,18 @@
  */
 package Challenges;
 
-import java.io.*;
+import com.google.gson.Gson;
 
-import java.math.*;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
-import java.security.*;
-import java.text.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.regex.*;
-import java.util.stream.*;
-
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class Challenge1 {
-    public String getGreeting() {
-        return "Hello world.";
-    }
 
     public static void main(String[] args) throws IOException, InterruptedException {
         /*
@@ -39,7 +27,8 @@ public class Challenge1 {
         int netEnd = Integer.parseInt(bufferedReader.readLine().trim());
         */
 
-        int result = Result.getExpenditure(2, 8, 5, 50);
+        int result = Result.getExpenditure(2, 8, 119, 212);
+        System.out.println(result);
 /*
         bufferedWriter.write(String.valueOf(result));
         bufferedWriter.newLine();
@@ -66,17 +55,199 @@ public class Challenge1 {
          */
 
         public static int getExpenditure(int userId, int locationId, int netStart, int netEnd) throws IOException, InterruptedException {
-           /* HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://jsonmock.hackerrank.com/api/transactions/search?userId="+userId))
-                    .build();
+            AtomicReference<Double> result = new AtomicReference<>((double) 0);
+            try {
+                URL url = new URL("https://jsonmock.hackerrank.com/api/transactions/search?userId=" + userId);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+                if (conn.getResponseCode() != 200) {
+                    System.out.println("Exception in NetClientGet:- " + conn.getResponseCode());
+                }
+                InputStreamReader in = new InputStreamReader(conn.getInputStream());
+                BufferedReader br = new BufferedReader(in);
+                Gson gson = new Gson();
+                UserInfo userInfo = gson.fromJson(br.readLine(), UserInfo.class);
 
-            HttpResponse<String> response = client.send(request,
-                    HttpResponse.BodyHandlers.ofString());
-
-            System.out.println(response.body());*/
-            return 0;
+                userInfo.getData().stream().forEach(data -> {
+                    if (data.getLocation().getId() == locationId) {
+                        System.out.println("IP: " + data.getIp());
+                        String[] ipFormatted = data.getIp().split("\\.");
+                        if (netStart <= Integer.valueOf(ipFormatted[0]) && Integer.valueOf(ipFormatted[0]) <= netEnd) {
+                            String formatedAmount = data.getAmount().replace("$", "");
+                            formatedAmount = formatedAmount.replaceAll(",", "");
+                            result.set(result.get() + Double.valueOf(formatedAmount));
+                        }
+                    }
+                });
+                conn.disconnect();
+            } catch (Exception e) {
+                System.out.println("Exception in NetClientGet:- " + e);
+            }
+            return result.get().intValue();
         }
 
+    }
+
+    class Data {
+        private Integer id;
+        private Integer userId;
+        private String userName;
+        private String timestamp;
+        private String txnType;
+        private String amount;
+        private Location location;
+        private String ip;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public Integer getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Integer userId) {
+            this.userId = userId;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(String timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public String getTxnType() {
+            return txnType;
+        }
+
+        public void setTxnType(String txnType) {
+            this.txnType = txnType;
+        }
+
+        public String getAmount() {
+            return amount;
+        }
+
+        public void setAmount(String amount) {
+            this.amount = amount;
+        }
+
+        public Location getLocation() {
+            return location;
+        }
+
+        public void setLocation(Location location) {
+            this.location = location;
+        }
+
+        public String getIp() {
+            return ip;
+        }
+
+        public void setIp(String ip) {
+            this.ip = ip;
+        }
+    }
+
+    class Location {
+        private Integer id;
+        private String address;
+        private String city;
+        private Integer zipCode;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public void setCity(String city) {
+            this.city = city;
+        }
+
+        public Integer getZipCode() {
+            return zipCode;
+        }
+
+        public void setZipCode(Integer zipCode) {
+            this.zipCode = zipCode;
+        }
+    }
+
+    class UserInfo {
+        private Integer page;
+        private Integer perPage;
+        private Integer total;
+        private Integer totalPages;
+        private List<Data> data = null;
+
+        public Integer getPage() {
+            return page;
+        }
+
+        public void setPage(Integer page) {
+            this.page = page;
+        }
+
+        public Integer getPerPage() {
+            return perPage;
+        }
+
+        public void setPerPage(Integer perPage) {
+            this.perPage = perPage;
+        }
+
+        public Integer getTotal() {
+            return total;
+        }
+
+        public void setTotal(Integer total) {
+            this.total = total;
+        }
+
+        public Integer getTotalPages() {
+            return totalPages;
+        }
+
+        public void setTotalPages(Integer totalPages) {
+            this.totalPages = totalPages;
+        }
+
+        public List<Data> getData() {
+            return data;
+        }
+
+        public void setData(List<Data> data) {
+            this.data = data;
+        }
     }
 }
